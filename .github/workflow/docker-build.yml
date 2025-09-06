@@ -1,0 +1,40 @@
+name: 🐳 Docker Build & Push
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch: # allows manual trigger
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Check out the code
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # 2️⃣ Log in to Docker Hub (or GHCR)
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # 3️⃣ Set up Docker Buildx (for multi-platform builds)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      # 4️⃣ Build and Push the Image
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            your-dockerhub-username/ui_framework:latest
+            your-dockerhub-username/ui_framework:${{ github.sha }}
+
+      # 5️⃣ (Optional) Verify Image
+      - name: Verify Image Build
+        run: docker pull your-dockerhub-username/ui_framework:latest
